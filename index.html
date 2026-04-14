@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sietch — Calculadora de Lucro Empresarial</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Michroma&family=JetBrains+Mono:wght@300;400;500;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ── Sietch Design System Tokens ─────────────────────── */
+    :root {
+      /* Primary */
+      --black: #000000;
+      --white: #FFFFFF;
+      --bios-deep: #0A0A41;
+      --data-cyan: #00E7FF;
+      --commander-teal: #13414D;
+      --tactical-silver: #E2E2E2;
+
+      /* Secondary */
+      --antiflash-white: #F1F4F8;
+      --aluminium: #C5C5C5;
+      --fog-data: #97A2B6;
+      --carbon-black: #2D2D2D;
+      --midnight-ops: #210639;
+
+      /* Signals */
+      --active-green: #69B883;
+      --rescue-orange: #DD4711;
+      --radar-amber: #EFBF2D;
+
+      /* Surfaces — dark mode */
+      --surface-0: #040410;
+      --surface-1: #08081E;
+      --surface-2: #0D0D30;
+      --surface-3: #141445;
+      --surface-border: rgba(0, 231, 255, 0.08);
+      --surface-border-strong: rgba(0, 231, 255, 0.15);
+
+      /* Text */
+      --text-primary: #F1F4F8;
+      --text-secondary: #97A2B6;
+      --text-tertiary: rgba(151, 162, 182, 0.6);
+      --text-accent: #00E7FF;
+
+      /* Accent runtime */
+      --accent: var(--data-cyan);
+      --accent-dim: rgba(0, 231, 255, 0.12);
+      --accent-glow: rgba(0, 231, 255, 0.25);
+
+      /* Typography */
+      --font-display: 'Michroma', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-body: 'Inter', sans-serif;
+    }
+
+    /* ── Light Mode Overrides ─────────────────────────────── */
+    html[data-theme="light"] {
+      --data-cyan: #0B7A8C;
+      --surface-0: #F1F4F8;
+      --surface-1: #FFFFFF;
+      --surface-2: #E9EEF5;
+      --surface-3: #DCE3EE;
+      --surface-border: rgba(19, 65, 77, 0.12);
+      --surface-border-strong: rgba(19, 65, 77, 0.22);
+
+      --text-primary: #0A0A41;
+      --text-secondary: #3B4A63;
+      --text-tertiary: rgba(59, 74, 99, 0.6);
+      --text-accent: #0B7A8C;
+
+      --accent: #0B7A8C;
+      --accent-dim: rgba(11, 122, 140, 0.12);
+      --accent-glow: rgba(11, 122, 140, 0.22);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--surface-0);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    /* ── Layout Shell ─────────────────────────────────────── */
+    .app {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar / Controls ───────────────────────────────── */
+    .controls {
+      background: var(--surface-1);
+      border-right: 1px solid var(--surface-border);
+      padding: 40px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+      overflow-y: auto;
+    }
+
+    .controls__brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .controls__brand img {
+      height: 28px;
+      object-fit: contain;
+      filter: brightness(1.1);
+    }
+
+    .section-label {
+      font-family: var(--font-display);
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-accent);
+      margin-bottom: 16px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field + .field { margin-top: 16px; }
+
+    .field label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      letter-spacing: 0.3px;
+    }
+
+    .field input[type="text"],
+    .field input[type="number"] {
+      height: 48px;
+      padding: 0 16px;
+      border: 1px solid var(--surface-border-strong);
+      border-radius: 6px;
+      font-size: 15px;
+      font-family: var(--font-mono);
+      font-weight: 500;
+      color: var(--text-primary);
+      background: var(--surface-0);
+      outline: none;
+      transition: border-color 150ms ease, box-shadow 150ms ease;
+      width: 100%;
+    }
+
+    .field input::placeholder {
+      color: var(--text-tertiary);
+    }
+
+    .field input:hover { border-color: rgba(0, 231, 255, 0.25); }
+
+    .field input:focus {
+      border-color: var(--data-cyan);
+      box-shadow: 0 0 0 1px var(--data-cyan), 0 0 20px rgba(0, 231, 255, 0.08);
+    }
+
+    .currency-input-wrap {
+      position: relative;
+    }
+
+    .currency-input-wrap::before {
+      content: 'R$';
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-accent);
+      opacity: 0.5;
+      pointer-events: none;
+      z-index: 1;
+      transition: opacity 150ms ease;
+    }
+
+    .currency-input-wrap:focus-within::before {
+      opacity: 1;
+    }
+
+    .currency-input-wrap input {
+      padding-left: 46px !important;
+      padding-right: 16px !important;
+    }
+
+    /* Live value preview under input */
+    .field-hint {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-tertiary);
+      letter-spacing: 0.3px;
+      min-height: 16px;
+      transition: color 200ms ease;
+    }
+
+    .field-hint--active {
+      color: var(--text-secondary);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      height: 48px;
+      padding: 0 24px;
+      border: none;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 180ms ease;
+      text-decoration: none;
+      text-transform: uppercase;
+    }
+
+    .btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+    .btn-theme .icon-theme-light { display: none; }
+    .btn-theme .icon-theme-dark  { display: block; }
+    html[data-theme="light"] .btn-theme .icon-theme-light { display: block; }
+    html[data-theme="light"] .btn-theme .icon-theme-dark  { display: none; }
+
+    .btn-filled {
+      background: var(--data-cyan);
+      color: var(--black);
+    }
+
+    .btn-filled:hover {
+      background: #33ecff;
+      box-shadow: 0 0 24px rgba(0, 231, 255, 0.3);
+    }
+
+    .btn-filled:active { background: #00d4ea; box-shadow: none; }
+
+    .btn-filled:disabled {
+      background: var(--surface-2);
+      color: var(--text-tertiary);
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .btn-outlined {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--surface-border-strong);
+    }
+
+    .btn-outlined:hover {
+      background: var(--surface-2);
+      border-color: rgba(0, 231, 255, 0.25);
+      color: var(--text-primary);
+    }
+
+    .controls__footer {
+      margin-top: auto;
+      padding-top: 24px;
+      border-top: 1px solid var(--surface-border);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* ── Main Canvas Area ─────────────────────────────────── */
+    .canvas-area {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px;
+      background: var(--surface-0);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ── Isometric Boxes Background ──────────────────────── */
+    .boxes-wrapper {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 300vw;
+      height: 300vh;
+      transform: translate(-50%, -50%) skewX(-48deg) skewY(14deg) scale(0.675);
+      transform-origin: center center;
+      display: flex;
+      flex-wrap: wrap;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .boxes-wrapper.interactive {
+      pointer-events: auto;
+    }
+
+    .box-row {
+      display: flex;
+      position: relative;
+      border-left: 1px solid rgba(0, 231, 255, 0.06);
+    }
+
+    .box-cell {
+      position: relative;
+      width: 64px;
+      height: 32px;
+      border-right: 1px solid rgba(0, 231, 255, 0.06);
+      border-top: 1px solid rgba(0, 231, 255, 0.06);
+      transition: background-color 2s ease;
+    }
+
+    .box-cell:hover {
+      transition: background-color 0s;
+    }
+
+    .box-cell .box-plus {
+      position: absolute;
+      left: -22px;
+      top: -14px;
+      width: 40px;
+      height: 24px;
+      pointer-events: none;
+    }
+
+    .box-cell .box-plus line {
+      stroke: rgba(0, 231, 255, 0.08);
+      stroke-width: 1.5;
+    }
+
+    .boxes-vignette {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background: var(--surface-0);
+      mask-image: radial-gradient(ellipse at center, transparent 15%, black 70%);
+      -webkit-mask-image: radial-gradient(ellipse at center, transparent 15%, black 70%);
+      pointer-events: none;
+    }
+
+    /* The exportable card */
+    .result-card {
+      width: 100%;
+      max-width: 720px;
+      background: var(--surface-1);
+      border: 1px solid var(--surface-border);
+      border-radius: 12px;
+      padding: 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 40px;
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    /* Corner accents */
+    .result-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--data-cyan), transparent);
+      opacity: 0.4;
+    }
+
+    .result-card::after {
+      content: '';
+      position: absolute;
+      top: -120px;
+      right: -120px;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(0, 231, 255, 0.04), transparent 70%);
+      pointer-events: none;
+    }
+
+    .result-card > * { position: relative; z-index: 1; }
+
+    /* Logo area in result */
+    .result-logo {
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .result-logo img {
+      max-height: 36px;
+      max-width: 220px;
+      object-fit: contain;
+    }
+
+    /* Gauge */
+    .gauge-container {
+      position: relative;
+      width: 280px;
+      height: 280px;
+    }
+
+    .gauge-svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .gauge-track {
+      fill: none;
+      stroke: var(--surface-2);
+      stroke-width: 12;
+    }
+
+    .gauge-fill {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 12;
+      stroke-linecap: round;
+      stroke-dasharray: 753.98;
+      stroke-dashoffset: 753.98;
+      transition: stroke-dashoffset 1.4s cubic-bezier(0.22, 1, 0.36, 1),
+                  stroke 300ms ease;
+      filter: drop-shadow(0 0 12px var(--accent-glow));
+    }
+
+    .gauge-glow {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 24;
+      stroke-linecap: round;
+      stroke-dasharray: 753.98;
+      stroke-dashoffset: 753.98;
+      transition: stroke-dashoffset 1.4s cubic-bezier(0.22, 1, 0.36, 1);
+      opacity: 0.08;
+      filter: blur(8px);
+    }
+
+    .gauge-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .gauge-percent {
+      font-family: var(--font-mono);
+      font-size: 48px;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--text-primary);
+      letter-spacing: -1px;
+      font-variant-numeric: tabular-nums;
+      max-width: 220px;
+      text-align: center;
+      overflow-wrap: anywhere;
+      transition: font-size 0.2s ease;
+    }
+
+    .gauge-percent-symbol {
+      font-size: 24px;
+      font-weight: 400;
+      color: var(--text-accent);
+      letter-spacing: 0;
+    }
+
+    .gauge-sublabel {
+      font-family: var(--font-display);
+      font-size: 9px;
+      font-weight: 400;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 3px;
+    }
+
+    /* Stats row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 0;
+      width: 100%;
+      align-items: center;
+    }
+
+    .stat-block {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .stat-block:last-child { text-align: right; }
+
+    .stat-block__label {
+      font-family: var(--font-display);
+      font-size: 9px;
+      font-weight: 400;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text-tertiary);
+    }
+
+    .stat-block__value {
+      font-family: var(--font-mono);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stat-block__sub {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .stat-block__sub--positive { color: var(--active-green); }
+    .stat-block__sub--negative { color: var(--rescue-orange); }
+    .stat-block__sub--neutral  { color: var(--text-tertiary); }
+
+    .stats-divider {
+      width: 1px;
+      height: 56px;
+      background: var(--surface-border-strong);
+      margin: 0 32px;
+    }
+
+    /* Status badge */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .status-badge--ahead {
+      background: rgba(105, 184, 131, 0.1);
+      color: var(--active-green);
+      border: 1px solid rgba(105, 184, 131, 0.2);
+    }
+
+    .status-badge--behind {
+      background: rgba(221, 71, 17, 0.1);
+      color: var(--rescue-orange);
+      border: 1px solid rgba(221, 71, 17, 0.2);
+    }
+
+    .status-badge--warning {
+      background: rgba(239, 191, 45, 0.1);
+      color: var(--radar-amber);
+      border: 1px solid rgba(239, 191, 45, 0.2);
+    }
+
+    .status-badge--neutral {
+      background: var(--surface-2);
+      color: var(--text-tertiary);
+      border: 1px solid var(--surface-border);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 6px currentColor;
+    }
+
+    /* Timestamp */
+    .result-timestamp {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-tertiary);
+      letter-spacing: 0.5px;
+    }
+
+    /* Empty state */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 48px 32px;
+      text-align: center;
+    }
+
+    .empty-state svg {
+      width: 48px;
+      height: 48px;
+      color: var(--surface-border-strong);
+    }
+
+    .empty-state__title {
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--text-secondary);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .empty-state__desc {
+      font-family: var(--font-body);
+      font-size: 13px;
+      color: var(--text-tertiary);
+      max-width: 300px;
+      line-height: 1.6;
+    }
+
+    /* ── Responsive ───────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .app {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+      }
+
+      .controls {
+        border-right: none;
+        border-bottom: 1px solid var(--surface-border);
+        padding: 24px 20px;
+      }
+
+      .canvas-area { padding: 24px 16px; }
+      .result-card { padding: 32px 24px; }
+      .gauge-container { width: 220px; height: 220px; }
+      .gauge-percent { font-size: 36px; }
+      .stats-divider { margin: 0 16px; }
+      .stat-block__value { font-size: 17px; }
+    }
+
+    @media print {
+      .controls { display: none; }
+      .canvas-area { padding: 0; }
+    }
+
+    /* ── Animations ───────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes scanline {
+      from { transform: translateY(-100%); }
+      to   { transform: translateY(100vh); }
+    }
+
+    .animate-in {
+      animation: fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .delay-1 { animation-delay: 0.1s; opacity: 0; }
+    .delay-2 { animation-delay: 0.25s; opacity: 0; }
+    .delay-3 { animation-delay: 0.4s; opacity: 0; }
+    .delay-4 { animation-delay: 0.55s; opacity: 0; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- ─── Controls Panel ─────────────────────────────── -->
+    <aside class="controls">
+      <div class="controls__brand">
+        <img src="Logo-marca.png" alt="Sietch">
+      </div>
+
+      <!-- Data Input -->
+      <div>
+        <div class="section-label">Dados Financeiros</div>
+        <div class="field">
+          <label for="earnings">Ganhos Atuais</label>
+          <div class="currency-input-wrap">
+            <input type="text" id="earnings" placeholder="0,00" inputmode="numeric" autocomplete="off">
+          </div>
+          <div class="field-hint" id="earningsHint">Digite o valor em reais</div>
+        </div>
+        <div class="field">
+          <label for="goal">Meta de Lucro</label>
+          <div class="currency-input-wrap">
+            <input type="text" id="goal" placeholder="0,00" inputmode="numeric" autocomplete="off">
+          </div>
+          <div class="field-hint" id="goalHint">Digite o valor em reais</div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="controls__footer">
+        <button class="btn btn-outlined btn-theme" id="themeBtn" type="button" aria-label="Alternar tema">
+          <svg class="icon-theme-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+          <svg class="icon-theme-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+          </svg>
+          <span id="themeLabel">Modo claro</span>
+        </button>
+        <button class="btn btn-outlined" id="resetBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="1 4 1 10 7 10"/>
+            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+          </svg>
+          Limpar Dados
+        </button>
+      </div>
+    </aside>
+
+    <!-- ─── Result Canvas ──────────────────────────────── -->
+    <main class="canvas-area">
+      <!-- Isometric Boxes Background -->
+      <div class="boxes-wrapper" id="boxesWrapper"></div>
+      <div class="boxes-vignette"></div>
+      <div class="result-card" id="resultCard">
+
+        <!-- Logo -->
+        <div class="result-logo" id="resultLogo">
+          <img src="Logo-marca.png" alt="Sietch">
+        </div>
+
+        <!-- Empty state -->
+        <div class="empty-state" id="emptyState">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20V10"/>
+            <path d="M18 20V4"/>
+            <path d="M6 20v-4"/>
+          </svg>
+          <div class="empty-state__title">Insira os dados financeiros</div>
+          <div class="empty-state__desc">Preencha os ganhos atuais e a meta de lucro para visualizar o progresso da empresa.</div>
+        </div>
+
+        <!-- Gauge (hidden initially) -->
+        <div id="gaugeSection" style="display:none; flex-direction:column; align-items:center; gap:40px; width:100%;">
+
+          <div class="gauge-container animate-in delay-1">
+            <svg class="gauge-svg" viewBox="0 0 280 280">
+              <circle class="gauge-track" cx="140" cy="140" r="120"/>
+              <circle class="gauge-glow" id="gaugeGlow" cx="140" cy="140" r="120"/>
+              <circle class="gauge-fill" id="gaugeFill" cx="140" cy="140" r="120"/>
+            </svg>
+            <div class="gauge-center">
+              <div class="gauge-percent">
+                <span id="percentValue">0,00</span><span class="gauge-percent-symbol">%</span>
+              </div>
+              <div class="gauge-sublabel">da meta</div>
+            </div>
+          </div>
+
+          <div id="statusBadge" class="status-badge status-badge--neutral animate-in delay-2">
+            <div class="status-dot"></div>
+            <span id="statusText">Aguardando dados</span>
+          </div>
+
+          <div class="stats-row animate-in delay-3">
+            <div class="stat-block">
+              <span class="stat-block__label">Ganhos Atuais</span>
+              <span class="stat-block__value" id="statEarnings">R$ 0</span>
+              <span class="stat-block__sub stat-block__sub--neutral" id="statEarningsSub">—</span>
+            </div>
+            <div class="stats-divider"></div>
+            <div class="stat-block">
+              <span class="stat-block__label">Meta de Lucro</span>
+              <span class="stat-block__value" id="statGoal">R$ 0</span>
+              <span class="stat-block__sub stat-block__sub--neutral" id="statRemaining">—</span>
+            </div>
+          </div>
+
+          <div class="result-timestamp animate-in delay-4" id="timestamp"></div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    /* ── Utils ──────────────────────────────────────────── */
+    function parseCurrency(str) {
+      if (!str) return 0;
+      // Remove thousand separators (.) and convert decimal comma to dot
+      const clean = str.replace(/\./g, '').replace(',', '.');
+      return parseFloat(clean) || 0;
+    }
+
+    function formatBRL(n) {
+      return n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function formatInputAsCurrency(input, hintEl) {
+      // Strip everything except digits — treat as centavos
+      let digits = input.value.replace(/\D/g, '');
+      if (!digits) {
+        input.value = '';
+        if (hintEl) { hintEl.textContent = 'Digite o valor em reais'; hintEl.classList.remove('field-hint--active'); }
+        return;
+      }
+
+      // Remove leading zeros but keep at least 1
+      digits = digits.replace(/^0+/, '') || '0';
+
+      // Pad to at least 3 digits so we always have X,XX
+      while (digits.length < 3) digits = '0' + digits;
+
+      // Split: everything except last 2 = integer, last 2 = decimal
+      const intPart = digits.slice(0, -2);
+      const decPart = digits.slice(-2);
+
+      // Add thousand separators to integer part
+      const intFormatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+      input.value = intFormatted + ',' + decPart;
+
+      // Update hint
+      if (hintEl) {
+        hintEl.textContent = 'R$ ' + intFormatted + ',' + decPart;
+        hintEl.classList.add('field-hint--active');
+      }
+    }
+
+    function formatPercent(value) {
+      return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function fitPercentFont() {
+      const wrap = document.querySelector('.gauge-percent');
+      if (!wrap) return;
+      const text = document.getElementById('percentValue').textContent || '';
+      const len = text.length;
+      let size = 48;
+      if (len > 6)  size = 40;
+      if (len > 8)  size = 32;
+      if (len > 10) size = 26;
+      if (len > 12) size = 22;
+      wrap.style.fontSize = size + 'px';
+    }
+
+    /* ── Gauge animation ───────────────────────────────── */
+    const CIRCUMFERENCE = 2 * Math.PI * 120;
+    let currentAnimFrame = null;
+
+    function animateGauge(targetPercent) {
+      const fill = document.getElementById('gaugeFill');
+      const glow = document.getElementById('gaugeGlow');
+      const percentEl = document.getElementById('percentValue');
+      const clamped = Math.min(Math.max(targetPercent, 0), 100);
+      const targetOffset = CIRCUMFERENCE - (CIRCUMFERENCE * clamped / 100);
+
+      fill.style.strokeDashoffset = targetOffset;
+      glow.style.strokeDashoffset = targetOffset;
+
+      // Counter animation with decimals
+      const startStr = percentEl.textContent.replace(/\./g, '').replace(',', '.');
+      const startVal = parseFloat(startStr) || 0;
+      const diff = targetPercent - startVal;
+      const duration = 1200;
+      const startTime = performance.now();
+
+      if (currentAnimFrame) cancelAnimationFrame(currentAnimFrame);
+
+      function tick(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = startVal + diff * eased;
+        percentEl.textContent = formatPercent(Math.max(0, current));
+        fitPercentFont();
+        if (progress < 1) {
+          currentAnimFrame = requestAnimationFrame(tick);
+        } else {
+          percentEl.textContent = formatPercent(Math.max(0, targetPercent));
+          fitPercentFont();
+        }
+      }
+
+      currentAnimFrame = requestAnimationFrame(tick);
+    }
+
+    /* ── Core calculation ──────────────────────────────── */
+    function calculate() {
+      const earnings = parseCurrency(document.getElementById('earnings').value);
+      const goal = parseCurrency(document.getElementById('goal').value);
+      const emptyState = document.getElementById('emptyState');
+      const gaugeSection = document.getElementById('gaugeSection');
+
+      if (!earnings && !goal) {
+        emptyState.style.display = 'flex';
+        gaugeSection.style.display = 'none';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+      gaugeSection.style.display = 'flex';
+
+      const percent = goal > 0 ? (earnings / goal) * 100 : 0;
+      const diff = earnings - goal;
+
+      animateGauge(percent);
+
+      // Stats
+      document.getElementById('statEarnings').textContent = formatBRL(earnings);
+      document.getElementById('statGoal').textContent = formatBRL(goal);
+
+      // Earnings sub
+      const earningsSub = document.getElementById('statEarningsSub');
+      if (goal > 0 && earnings > 0) {
+        if (diff >= 0) {
+          earningsSub.className = 'stat-block__sub stat-block__sub--positive';
+          earningsSub.textContent = `+${formatBRL(diff)} acima`;
+        } else {
+          earningsSub.className = 'stat-block__sub stat-block__sub--negative';
+          earningsSub.textContent = `${formatBRL(diff)} abaixo`;
+        }
+      } else {
+        earningsSub.className = 'stat-block__sub stat-block__sub--neutral';
+        earningsSub.textContent = '\u2014';
+      }
+
+      // Remaining
+      const remainingEl = document.getElementById('statRemaining');
+      if (goal > 0 && diff < 0) {
+        remainingEl.className = 'stat-block__sub stat-block__sub--neutral';
+        remainingEl.textContent = `Faltam ${formatBRL(Math.abs(diff))}`;
+      } else if (diff >= 0 && goal > 0) {
+        remainingEl.className = 'stat-block__sub stat-block__sub--positive';
+        remainingEl.textContent = 'Meta alcancada';
+      } else {
+        remainingEl.className = 'stat-block__sub stat-block__sub--neutral';
+        remainingEl.textContent = '\u2014';
+      }
+
+      // Status badge
+      const badge = document.getElementById('statusBadge');
+      const statusText = document.getElementById('statusText');
+
+      if (percent >= 100) {
+        badge.className = 'status-badge status-badge--ahead animate-in';
+        statusText.textContent = 'Meta atingida';
+      } else if (percent >= 75) {
+        badge.className = 'status-badge status-badge--ahead animate-in';
+        statusText.textContent = 'No caminho certo';
+      } else if (percent >= 40) {
+        badge.className = 'status-badge status-badge--warning animate-in';
+        statusText.textContent = 'Atencao necessaria';
+      } else if (percent > 0) {
+        badge.className = 'status-badge status-badge--behind animate-in';
+        statusText.textContent = 'Abaixo do esperado';
+      } else {
+        badge.className = 'status-badge status-badge--neutral animate-in';
+        statusText.textContent = 'Sem progresso';
+      }
+
+      // Timestamp
+      const now = new Date();
+      document.getElementById('timestamp').textContent =
+        `Atualizado em ${now.toLocaleDateString('pt-BR')} as ${now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+    }
+
+    /* ── Input formatting & listeners ──────────────────── */
+    const earningsInput = document.getElementById('earnings');
+    const goalInput = document.getElementById('goal');
+    const earningsHint = document.getElementById('earningsHint');
+    const goalHint = document.getElementById('goalHint');
+
+    earningsInput.addEventListener('input', () => {
+      formatInputAsCurrency(earningsInput, earningsHint);
+      calculate();
+    });
+
+    goalInput.addEventListener('input', () => {
+      formatInputAsCurrency(goalInput, goalHint);
+      calculate();
+    });
+
+    // Select all on focus for easy overwrite
+    [earningsInput, goalInput].forEach(input => {
+      input.addEventListener('focus', () => input.select());
+    });
+
+    /* ── Theme toggle ────────────────────────────────────── */
+    (function initTheme() {
+      const btn = document.getElementById('themeBtn');
+      const label = document.getElementById('themeLabel');
+      const stored = localStorage.getItem('sietch-theme');
+      const initial = stored === 'light' ? 'light' : 'dark';
+      applyTheme(initial);
+
+      btn.addEventListener('click', () => {
+        const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        applyTheme(next);
+        localStorage.setItem('sietch-theme', next);
+      });
+
+      function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        label.textContent = theme === 'light' ? 'Modo escuro' : 'Modo claro';
+      }
+    })();
+
+    /* ── Reset ─────────────────────────────────────────── */
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      earningsInput.value = '';
+      goalInput.value = '';
+      earningsHint.textContent = 'Digite o valor em reais';
+      earningsHint.classList.remove('field-hint--active');
+      goalHint.textContent = 'Digite o valor em reais';
+      goalHint.classList.remove('field-hint--active');
+      calculate();
+
+      document.getElementById('gaugeFill').style.strokeDashoffset = CIRCUMFERENCE;
+      document.getElementById('gaugeGlow').style.strokeDashoffset = CIRCUMFERENCE;
+      document.getElementById('percentValue').textContent = '0,00';
+    });
+
+    /* ── Isometric Boxes Background ─────────────────────── */
+    (function() {
+      const wrapper = document.getElementById('boxesWrapper');
+      const ROWS = 80;
+      const COLS = 60;
+
+      // Sietch-adapted colors for hover
+      const hoverColors = [
+        'rgba(0, 231, 255, 0.25)',    // data-cyan
+        'rgba(0, 180, 220, 0.2)',     // cyan muted
+        'rgba(19, 65, 77, 0.35)',     // commander-teal
+        'rgba(10, 10, 65, 0.4)',      // bios-deep light
+        'rgba(0, 231, 255, 0.15)',    // data-cyan dim
+        'rgba(105, 184, 131, 0.2)',   // active-green
+        'rgba(151, 162, 182, 0.15)',  // fog-data
+        'rgba(33, 6, 57, 0.35)',      // midnight-ops
+      ];
+
+      function getRandomColor() {
+        return hoverColors[Math.floor(Math.random() * hoverColors.length)];
+      }
+
+      // Build grid with DocumentFragment for performance
+      const fragment = document.createDocumentFragment();
+
+      for (let r = 0; r < ROWS; r++) {
+        const row = document.createElement('div');
+        row.className = 'box-row';
+
+        for (let c = 0; c < COLS; c++) {
+          const cell = document.createElement('div');
+          cell.className = 'box-cell';
+
+          // Plus signs on alternating cells
+          if (r % 2 === 0 && c % 2 === 0) {
+            cell.innerHTML = '<svg class="box-plus" viewBox="0 0 24 24" fill="none"><line x1="12" y1="6" x2="12" y2="18"/><line x1="6" y1="12" x2="18" y2="12"/></svg>';
+          }
+
+          cell.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = getRandomColor();
+          });
+
+          cell.addEventListener('mouseleave', function() {
+            // Let CSS transition handle the fade out
+            this.style.backgroundColor = 'transparent';
+          });
+
+          row.appendChild(cell);
+        }
+
+        fragment.appendChild(row);
+      }
+
+      wrapper.appendChild(fragment);
+
+      // Enable pointer events after initial render
+      requestAnimationFrame(() => {
+        wrapper.classList.add('interactive');
+      });
+
+      // Random ambient glow — periodically light up random cells
+      const allCells = wrapper.querySelectorAll('.box-cell');
+      function ambientPulse() {
+        const idx = Math.floor(Math.random() * allCells.length);
+        const cell = allCells[idx];
+        cell.style.backgroundColor = getRandomColor();
+        setTimeout(() => {
+          cell.style.backgroundColor = 'transparent';
+        }, 2000 + Math.random() * 3000);
+      }
+
+      // Fire ambient pulses
+      setInterval(ambientPulse, 120);
+    })();
+
+    /* ── Init ──────────────────────────────────────────── */
+    calculate();
+  </script>
+</body>
+</html>
