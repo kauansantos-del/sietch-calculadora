@@ -406,11 +406,17 @@
       justify-content: center;
     }
 
-    .result-logo img {
+    .result-logo img,
+    .controls__brand img {
       max-height: 36px;
       max-width: 220px;
       object-fit: contain;
     }
+
+    .logo-light { display: none; }
+    .logo-dark  { display: block; }
+    html[data-theme="light"] .logo-light { display: block; }
+    html[data-theme="light"] .logo-dark  { display: none; }
 
     /* Gauge */
     .gauge-container {
@@ -690,7 +696,8 @@
     <!-- ─── Controls Panel ─────────────────────────────── -->
     <aside class="controls">
       <div class="controls__brand">
-        <img src="Logo-marca.png" alt="Sietch">
+        <img class="logo-dark"  src="logo-dark.svg"  alt="Sietch">
+        <img class="logo-light" src="logo-light.svg" alt="Sietch">
       </div>
 
       <!-- Data Input -->
@@ -743,7 +750,8 @@
 
         <!-- Logo -->
         <div class="result-logo" id="resultLogo">
-          <img src="Logo-marca.png" alt="Sietch">
+          <img class="logo-dark"  src="logo-dark.svg"  alt="Sietch">
+          <img class="logo-light" src="logo-light.svg" alt="Sietch">
         </div>
 
         <!-- Empty state -->
